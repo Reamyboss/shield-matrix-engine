@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lagos Haulage Logistics Dispatch</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #0f172a;
+        color: #f8fafc;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .dispatch-card {
+        background-color: #1e293b;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        max-width: 450px;
+        width: 100%;
+        border: 1px solid #334155;
+      }
+      h2 {
+        color: #38bdf8;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        font-size: 1.6rem;
+      }
+      .form-group {
+        margin-bottom: 1.2rem;
+      }
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #94a3b8;
+        font-size: 0.9rem;
+      }
+      select,
+      input {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: #0f172a;
+        border: 1px solid #475569;
+        border-radius: 6px;
+        color: white;
+        font-size: 1rem;
+        box-sizing: border-box;
+      }
+      select:focus,
+      input:focus {
+        border-color: #38bdf8;
+        outline: none;
+      }
+      button {
+        background-color: #0ea5e9;
+        color: white;
+        border: none;
+        padding: 0.85rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.2s;
+        width: 100%;
+        margin-top: 1rem;
+      }
+      button:hover {
+        background-color: #0284c7;
+      }
+      #status-box {
+        margin-top: 1.5rem;
+        padding: 0.75rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        display: none;
+        text-align: center;
+      }
+      .success {
+        background-color: #065f46;
+        color: #34d399;
+      }
+      .error {
+        background-color: #7f1d1d;
+        color: #f87171;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dispatch-card">
+      <h2>🚛 Lagos Heavy Freight Dispatch</h2>
+
+      <div class="form-group">
+        <label for="pickup">Pickup Zone (Lagos)</label>
+        <select id="pickup">
+          <option value="Apapa Port">Apapa Port Terminal</option>
+          <option value="Ikeja Industrial Estate">
+            Ikeja Industrial Estate
+          </option>
+          <option value="Lekki Free Trade Zone">Lekki Free Trade Zone</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="dropoff">Dropoff Destination</label>
+        <select id="dropoff">
+          <option value="Ikorodu Central">Ikorodu Central</option>
+          <option value="Alaba International">Alaba International</option>
+          <option value="Sagamu Interchange">Sagamu Interchange</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="truck">Required Vehicle Type</label>
+        <select id="truck">
+          <option value="30-Ton Flatbed Truck">
+            30-Ton Flatbed Container Truck
+          </option>
+          <option value="20-Ton Closed Boxer Truck">
+            20-Ton Closed Boxer Truck
+          </option>
+          <option value="15-Ton Tipper Truck">15-Ton Tipper Truck</option>
+        </select>
+      </div>
+
+      <button id="book-btn">Request Dispatch Haulage</button>
+
+      <div id="status-box"></div>
+    </div>
+
+    <script>
+      document
+        .getElementById("book-btn")
+        .addEventListener("click", async () => {
+          const statusBox = document.getElementById("status-box");
+          statusBox.style.display = "block";
+          statusBox.className = "";
+          statusBox.innerText = "Processing dispatch mapping...";
+
+          const payload = {
+            pickup_zone: document.getElementById("pickup").value,
+            dropoff_zone: document.getElementById("dropoff").value,
+            truck_type: document.getElementById("truck").value,
+          };
+
+          try {
+            const response = await fetch(
+              "http://127.0.0.1:8000/api/v1/bookings/create",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+              },
+            );
+
+            const data = await response.json();
+
+            if (response.ok) {
+              statusBox.className = "success";
+              statusBox.innerText = `🟢 Dispatch Confirmed: ${data.message}`;
+            } else {
+              statusBox.className = "error";
+              statusBox.innerText = `❌ Order Rejected: ${data.detail || "Failed to process dispatch"}`;
+            }
+          } catch (error) {
+            statusBox.className = "error";
+            statusBox.innerText =
+              "❌ Network Disconnect: Backend system unreachable.";
+          }
+        });
+    </script>
+  </body>
+</html>

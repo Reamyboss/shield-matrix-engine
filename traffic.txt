@@ -1,0 +1,6 @@
+[2026-06-04 22:35:17] Website: https://my-test-website.com/home | IP: 102.89.45.12
+[2026-06-04 22:39:23] Website: https://my-test-website.com/home | IP: 102.89.45.12
+[2026-06-04 22:39:29] Website: https://my-test-website.com/home | IP: 102.89.45.12
+[2026-06-04 22:45:06] Website: https://my-test-website.com/home | IP: 102.89.45.12
+[2026-06-04 22:50:31] Website: facebook.com | IP: 1.1.1.1
+🟢 [SAFE TRAFFIC] Time: 2026-06-04 22:59:31 | Website: walmart.com | IP: 1.1.1.1
