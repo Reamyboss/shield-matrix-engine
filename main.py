@@ -1,4 +1,4 @@
-import math, sqlite3, asyncio
+import math, asyncio
 from contextlib import asynccontextmanager
 import httpx
 from fastapi import FastAPI, HTTPException, Query
@@ -80,7 +80,33 @@ async def predict(home: str, away: str):
     elif pred["away_win"] > 50: tip = f"{away} to Win"
     elif pred["draw"] > 30: tip = "Draw likely"
     else: tip = "Too close to call"
-    return {"match": f"{home} vs {away}", "home_win": f"{pred['home_win']}%", "draw": f"{pred['draw']}%", "away_win": f"{pred['away_win']}%", "risk": risk, "confidence": f"{confidence}%", "tip": tip, "model": "Poisson v3.0 — Shield Matrix"}
+    return {"match": f"{home} vs {away}", "home_win": f"{pred['home_win']}%", "draw": f"{pred['draw']}%", "away_win": f"{pred['away_win']}%", "risk": risk, "confidence": f"{confidence}%", "tip": tip, "model": "Poisson v3.0"}
+
+@app.get("/api/phase/leagues")
+async def get_leagues_phase():
+    db = get_db()
+    rows = db.execute("SELECT sport, league, season, match_date, home_team, away_team, home_score, away_score FROM matches WHERE league NOT IN ('general', 'International') ORDER BY match_date DESC LIMIT 50").fetchall()
+    db.close()
+    results = []
+    for r in rows:
+        hs = r[6] or 0
+        as_ = r[7] or 0
+        total = hs + as_
+        results.append({"sport": r[0], "league": r[1], "season": r[2], "date": r[3], "home": r[4], "away": r[5], "home_score": hs, "away_score": as_, "tip": "Over 2.5 Goals" if total >= 3 else "Under 2.5 Goals", "home_win": "55%" if hs > as_ else "25%", "draw": "20%" if hs == as_ else "15%", "away_win": "55%" if as_ > hs else "20%", "ou_matrix": f"O2.5: {'78%' if total >= 3 else '35%'} | U2.5: {'22%' if total >= 3 else '65%'}"})
+    return results
+
+@app.get("/api/phase/worldcup")
+async def get_worldcup_phase():
+    db = get_db()
+    rows = db.execute("SELECT sport, league, season, match_date, home_team, away_team, home_score, away_score FROM matches WHERE league IN ('general', 'International') ORDER BY match_date DESC LIMIT 50").fetchall()
+    db.close()
+    results = []
+    for r in rows:
+        hs = r[6] or 0
+        as_ = r[7] or 0
+        total = hs + as_
+        results.append({"sport": r[0], "league": r[1], "season": r[2], "date": r[3], "home": r[4], "away": r[5], "home_score": hs, "away_score": as_, "tip": "Over 2.5 Goals" if total >= 3 else "Under 2.5 Goals", "home_win": "55%" if hs > as_ else "25%", "draw": "20%" if hs == as_ else "15%", "away_win": "55%" if as_ > hs else "20%", "ou_matrix": f"O2.5: {'78%' if total >= 3 else '35%'} | U2.5: {'22%' if total >= 3 else '65%'}"})
+    return results
 
 @app.get("/standings")
 async def get_standings(league: str):
@@ -88,8 +114,3 @@ async def get_standings(league: str):
     rows = db.execute("SELECT * FROM standings WHERE league LIKE ? ORDER BY position ASC", (f"%{league}%",)).fetchall()
     db.close()
     return {"standings": [dict(r) for r in rows], "league": league}
-
-@app.post("/admin/collect")
-async def trigger_collection():
-    asyncio.create_task(run_all_collectors())
-    return {"status": "Collection started"}
