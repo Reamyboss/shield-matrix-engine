@@ -6,12 +6,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import init_db, get_db
 from collector import run_all_collectors
 
+from scheduler import start_scheduler, stop_scheduler
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
     asyncio.create_task(run_all_collectors())
+    start_scheduler()
     yield
-
+    stop_scheduler()
 app = FastAPI(title="Shield Matrix", version="3.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
