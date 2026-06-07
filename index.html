@@ -3,175 +3,223 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lagos Haulage Logistics Dispatch</title>
-    <style>
-      body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #0f172a;
-        color: #f8fafc;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-      }
-      .dispatch-card {
-        background-color: #1e293b;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-        max-width: 450px;
-        width: 100%;
-        border: 1px solid #334155;
-      }
-      h2 {
-        color: #38bdf8;
-        margin-top: 0;
-        margin-bottom: 1.5rem;
-        text-align: center;
-        font-size: 1.6rem;
-      }
-      .form-group {
-        margin-bottom: 1.2rem;
-      }
-      label {
-        display: block;
-        margin-bottom: 0.5rem;
-        color: #94a3b8;
-        font-size: 0.9rem;
-      }
-      select,
-      input {
-        width: 100%;
-        padding: 0.75rem;
-        background-color: #0f172a;
-        border: 1px solid #475569;
-        border-radius: 6px;
-        color: white;
-        font-size: 1rem;
-        box-sizing: border-box;
-      }
-      select:focus,
-      input:focus {
-        border-color: #38bdf8;
-        outline: none;
-      }
-      button {
-        background-color: #0ea5e9;
-        color: white;
-        border: none;
-        padding: 0.85rem;
-        font-size: 1rem;
-        font-weight: 600;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background 0.2s;
-        width: 100%;
-        margin-top: 1rem;
-      }
-      button:hover {
-        background-color: #0284c7;
-      }
-      #status-box {
-        margin-top: 1.5rem;
-        padding: 0.75rem;
-        border-radius: 6px;
-        font-size: 0.9rem;
-        display: none;
-        text-align: center;
-      }
-      .success {
-        background-color: #065f46;
-        color: #34d399;
-      }
-      .error {
-        background-color: #7f1d1d;
-        color: #f87171;
-      }
-    </style>
+    <title>Shield Matrix Engine v3.0 — Telemetry Terminal</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="dispatch-card">
-      <h2>🚛 Lagos Heavy Freight Dispatch</h2>
+    <div class="container">
+      <header>
+        <h1>🛡️ SHIELD MATRIX INFRASTRUCTURE</h1>
+        <p>Algorithmic Data Core Pipeline — Engine Live Terminal</p>
+      </header>
 
-      <div class="form-group">
-        <label for="pickup">Pickup Zone (Lagos)</label>
-        <select id="pickup">
-          <option value="Apapa Port">Apapa Port Terminal</option>
-          <option value="Ikeja Industrial Estate">
-            Ikeja Industrial Estate
-          </option>
-          <option value="Lekki Free Trade Zone">Lekki Free Trade Zone</option>
-        </select>
-      </div>
+      <main class="matrix-card">
+        <h2>🎯 Run Instant Poisson Model</h2>
+        <div class="grid-inputs">
+          <div class="form-group">
+            <label for="home-team">Home Identity String</label>
+            <input
+              type="text"
+              id="home-team"
+              placeholder="e.g. Arsenal"
+              required
+            />
+          </div>
+          <div class="vs-divider">VS</div>
+          <div class="form-group">
+            <label for="away-team">Away Identity String</label>
+            <input
+              type="text"
+              id="away-team"
+              placeholder="e.g. Chelsea"
+              required
+            />
+          </div>
+        </div>
+        <button id="predict-btn">Execute Matrix Analysis</button>
 
-      <div class="form-group">
-        <label for="dropoff">Dropoff Destination</label>
-        <select id="dropoff">
-          <option value="Ikorodu Central">Ikorodu Central</option>
-          <option value="Alaba International">Alaba International</option>
-          <option value="Sagamu Interchange">Sagamu Interchange</option>
-        </select>
-      </div>
+        <div id="prediction-output" class="prediction-output">
+          <h3 id="output-match" class="match-title">Home vs Away</h3>
 
-      <div class="form-group">
-        <label for="truck">Required Vehicle Type</label>
-        <select id="truck">
-          <option value="30-Ton Flatbed Truck">
-            30-Ton Flatbed Container Truck
-          </option>
-          <option value="20-Ton Closed Boxer Truck">
-            20-Ton Closed Boxer Truck
-          </option>
-          <option value="15-Ton Tipper Truck">15-Ton Tipper Truck</option>
-        </select>
-      </div>
+          <div class="prob-bar-container">
+            <div class="prob-box">
+              <span>Home Win</span><strong id="prob-home">0%</strong>
+            </div>
+            <div class="prob-box">
+              <span>Draw</span><strong id="prob-draw">0%</strong>
+            </div>
+            <div class="prob-box">
+              <span>Away Win</span><strong id="prob-away">0%</strong>
+            </div>
+          </div>
 
-      <button id="book-btn">Request Dispatch Haulage</button>
+          <div class="meta-output">
+            <div>
+              <span class="text-muted-color">Suggested Tip:</span>
+              <strong id="output-tip" class="accent-color">-</strong>
+            </div>
+            <div>
+              <span class="text-muted-color">Risk Parameter:</span>
+              <strong id="output-risk">-</strong>
+            </div>
+            <div>
+              <span class="text-muted-color">Confidence Level:</span>
+              <strong id="output-confidence">-</strong>
+            </div>
+            <div id="output-model" class="model-blueprint-text">
+              Model Blueprint
+            </div>
+          </div>
+        </div>
+      </main>
 
-      <div id="status-box"></div>
+      <section class="matrix-card">
+        <div class="feed-header">
+          <h2>📊 Live Datalink Telemetry Feed</h2>
+          <div class="select-wrapper">
+            <select
+              id="sport-filter"
+              title="Sport Filter"
+              aria-label="Filter Match Feed by Sport"
+            >
+              <option value="football">FOOTBALL</option>
+              <option value="basketball">BASKETBALL</option>
+              <option value="american_football">NFL</option>
+              <option value="cricket">CRICKET</option>
+              <option value="rugby">RUGBY</option>
+            </select>
+          </div>
+        </div>
+        <div id="match-list" class="match-list"></div>
+      </section>
     </div>
 
     <script>
-      document
-        .getElementById("book-btn")
-        .addEventListener("click", async () => {
-          const statusBox = document.getElementById("status-box");
-          statusBox.style.display = "block";
-          statusBox.className = "";
-          statusBox.innerText = "Processing dispatch mapping...";
+      const API_BASE_URL = "http://127.0.0.1:8000";
 
-          const payload = {
-            pickup_zone: document.getElementById("pickup").value,
-            dropoff_zone: document.getElementById("dropoff").value,
-            truck_type: document.getElementById("truck").value,
-          };
+      // --- PIPELINE 1: CALCULATE MATRIX POISSON PROBABILITIES ---
+      document
+        .getElementById("predict-btn")
+        .addEventListener("click", async function () {
+          const home = document.getElementById("home-team").value.trim();
+          const away = document.getElementById("away-team").value.trim();
+          const outputBox = document.getElementById("prediction-output");
+
+          if (!home || !away) {
+            alert(
+              "Please declare both parameters before compiling structural math.",
+            );
+            return;
+          }
 
           try {
             const response = await fetch(
-              "http://127.0.0.1:8000/api/v1/bookings/create",
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-              },
+              API_BASE_URL +
+                "/predict?home=" +
+                encodeURIComponent(home) +
+                "&away=" +
+                encodeURIComponent(away),
             );
-
             const data = await response.json();
 
             if (response.ok) {
-              statusBox.className = "success";
-              statusBox.innerText = `🟢 Dispatch Confirmed: ${data.message}`;
+              outputBox.style.display = "block";
+              document.getElementById("output-match").innerText = data.match;
+              document.getElementById("prob-home").innerText = data.home_win;
+              document.getElementById("prob-draw").innerText = data.draw;
+              document.getElementById("prob-away").innerText = data.away_win;
+              document.getElementById("output-tip").innerText = data.tip;
+              document.getElementById("output-risk").innerText = data.risk;
+              document.getElementById("output-confidence").innerText =
+                data.confidence;
+              document.getElementById("output-model").innerText = data.model;
+
+              const riskEl = document.getElementById("output-risk");
+
+              // Reset any previous risk classes cleanly without messing up other configurations
+              riskEl.className = "";
+
+              if (data.risk === "LOW") {
+                riskEl.classList.add("risk-low");
+              } else if (data.risk === "MEDIUM") {
+                riskEl.classList.add("risk-medium");
+              } else {
+                riskEl.classList.add("risk-high");
+              }
             } else {
-              statusBox.className = "error";
-              statusBox.innerText = `❌ Order Rejected: ${data.detail || "Failed to process dispatch"}`;
+              alert(
+                "Engine Rejection: " +
+                  (data.detail || "Insufficient tracking values available."),
+              );
             }
           } catch (error) {
-            statusBox.className = "error";
-            statusBox.innerText =
-              "❌ Network Disconnect: Backend system unreachable.";
+            alert("Matrix Network Disconnect: Confirm Python app is live.");
           }
         });
+
+      // --- PIPELINE 2: RETRIEVE HISTORICAL STREAM METRICS ---
+      async function loadTelemetryFeed() {
+        const sport = document.getElementById("sport-filter").value;
+        const matchListContainer = document.getElementById("match-list");
+
+        matchListContainer.innerHTML = "";
+        const statusMsg = document.createElement("p");
+        statusMsg.className = "feed-status-message";
+        statusMsg.innerText = "Querying database blocks...";
+        matchListContainer.appendChild(statusMsg);
+
+        try {
+          const response = await fetch(
+            API_BASE_URL + "/matches?sport=" + sport + "&limit=40",
+          );
+          const data = await response.json();
+
+          matchListContainer.innerHTML = "";
+          if (!data.matches || data.matches.length === 0) {
+            const noMatchMsg = document.createElement("p");
+            noMatchMsg.className = "feed-status-message";
+            noMatchMsg.innerText = "No historical tracking matches found.";
+            matchListContainer.appendChild(noMatchMsg);
+            return;
+          }
+
+          for (let i = 0; i < data.matches.length; i++) {
+            const match = data.matches[i];
+
+            const row = document.createElement("div");
+            row.className = "match-row";
+
+            const homeDiv = document.createElement("div");
+            homeDiv.className = "team-name";
+            homeDiv.innerText = match.home_team;
+
+            const scoreDiv = document.createElement("div");
+            scoreDiv.className = "score-pill";
+            scoreDiv.innerText = match.home_score + " - " + match.away_score;
+
+            const awayDiv = document.createElement("div");
+            awayDiv.className = "team-name team-away";
+            awayDiv.innerText = match.away_team;
+
+            row.appendChild(homeDiv);
+            row.appendChild(scoreDiv);
+            row.appendChild(awayDiv);
+
+            matchListContainer.appendChild(row);
+          }
+        } catch (error) {
+          matchListContainer.innerHTML = "";
+          const errorMsg = document.createElement("p");
+          errorMsg.className = "feed-error-message";
+          errorMsg.innerText = "Error linking telemetry data feed.";
+          matchListContainer.appendChild(errorMsg);
+        }
+      }
+
+      document
+        .getElementById("sport-filter")
+        .addEventListener("change", loadTelemetryFeed);
+      window.addEventListener("DOMContentLoaded", loadTelemetryFeed);
     </script>
   </body>
 </html>
