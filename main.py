@@ -70,7 +70,15 @@ def build_prediction_for(fixture: dict) -> dict:
     mid = fixture["match_id"]
     cached = get_prediction(mid)
     if cached:
-        return json.loads(cached["top_scorelines"]) if isinstance(cached.get("top_scorelines"), str) else cached
+        return {
+            "home_team": fixture["home_team"],
+            "away_team": fixture["away_team"],
+            "xg": {"home": cached["home_xg"], "away": cached["away_xg"]},
+            "probabilities": {"home_win": cached["home_win_pct"], "draw": cached["draw_pct"], "away_win": cached["away_win_pct"]},
+            "markets": {"over_2_5": cached["over25_pct"], "under_2_5": cached["under25_pct"], "btts_yes": cached["btts_yes_pct"], "btts_no": cached["btts_no_pct"]},
+            "top_scorelines": json.loads(cached["top_scorelines"]) if isinstance(cached["top_scorelines"], str) else cached["top_scorelines"],
+            "best_bet": {"pick": cached["best_bet"], "probability": cached["best_bet_pct"], "confidence": cached["confidence"]}
+        }
 
     # Generate fresh
     live = get_live_team_stats()
@@ -257,3 +265,4 @@ def team_profile(team_name: str):
 @app.get("/health")
 def health():
     return {"status": "ok", "time": datetime.utcnow().isoformat()}
+
