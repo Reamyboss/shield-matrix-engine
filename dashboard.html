@@ -706,11 +706,11 @@
       const API =
         window.location.hostname === "localhost" ||
         window.location.hostname === "127.0.0.1"
-          ? "http://localhost:8000"
+          ? "https://web-production-6c64d.up.railway.app"
           : window.location.origin.includes("railway") ||
               window.location.origin.includes("render")
             ? window.location.origin
-            : "http://localhost:8000";
+            : "https://web-production-6c64d.up.railway.app";
 
       const loaded = {};
 
