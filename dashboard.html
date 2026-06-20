@@ -727,7 +727,7 @@
       }
 
       function render_pred(p, home, away) {
-        const hw = p.probabilities.home_win;
+        const hw = p?.probabilities?.home_win ?? p?.home_win ?? 0;
         const d = p.probabilities.draw;
         const aw = p.probabilities.away_win;
         const tot = hw + d + aw;
