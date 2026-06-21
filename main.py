@@ -298,3 +298,4 @@ def live_predict_manual(
     home_xg = (h["attack"] / 1.35) * (a["defense"] / 1.35) * 1.35 * 1.08
     away_xg = (a["attack"] / 1.35) * (h["defense"] / 1.35) * 1.35
     return live_predict(home, away, home_score, away_score, minute, home_xg, away_xg)
+
