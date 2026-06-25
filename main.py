@@ -12,10 +12,11 @@ from live_engine import live_predict, fetch_live_scores
 app = FastAPI(title="Shield Matrix Engine", version="3.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-if os.path.exists("dashboard.html"):
-    @app.get("/dashboard", include_in_schema=False)
-    def serve_dashboard():
+@app.get("/dashboard", include_in_schema=False)
+def serve_dashboard():
+    if os.path.exists("dashboard.html"):
         return FileResponse("dashboard.html")
+    return {"error": "Dashboard not found"}
 
 @app.on_event("startup")
 def startup():
@@ -139,3 +140,122 @@ def live_predict_manual(home: str, away: str, home_score: int=0, away_score: int
     hxg = (h["attack"]/1.35)*(a["defense"]/1.35)*1.35*1.08
     axg = (a["attack"]/1.35)*(h["defense"]/1.35)*1.35
     return live_predict(home, away, home_score, away_score, minute, hxg, axg)
+
+
+# ── REVIEWS ──────────────────────────────────────────────────────────────────
+
+from pydantic import BaseModel
+
+class ReviewIn(BaseModel):
+    name: str = "Anonymous"
+    text: str
+    rating: int
+
+@app.post("/reviews")
+def post_review(review: ReviewIn):
+    if not 1 <= review.rating <= 5:
+        raise HTTPException(400, "Rating must be 1-5")
+    if not review.text.strip():
+        raise HTTPException(400, "Review text required")
+    conn = get_conn()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS reviews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT, text TEXT, rating INTEGER,
+            date TEXT
+        )""")
+    conn.execute("INSERT INTO reviews (name, text, rating, date) VALUES (?,?,?,?)",
+        (review.name[:50], review.text[:500], review.rating,
+         datetime.utcnow().strftime("%b %d, %Y")))
+    conn.commit()
+    conn.close()
+    return {"message": "Review submitted. Thank you!"}
+
+@app.get("/reviews")
+def get_reviews():
+    conn = get_conn()
+    try:
+        conn.execute("CREATE TABLE IF NOT EXISTS reviews (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, text TEXT, rating INTEGER, date TEXT)")
+        rows = conn.execute("SELECT id, name, text, rating, date FROM reviews ORDER BY id DESC").fetchall()
+        conn.close()
+        return {"reviews": [dict(r) for r in rows], "total": len(rows)}
+    except Exception as e:
+        conn.close()
+        return {"reviews": [], "total": 0}
+
+
+# ── ADMIN PANEL ───────────────────────────────────────────────────────────────
+
+@app.get("/admin", include_in_schema=False)
+def serve_admin():
+    if os.path.exists("admin.html"):
+        return FileResponse("admin.html")
+    return {"error": "Admin panel not found"}
+
+
+# ── ADS ───────────────────────────────────────────────────────────────────────
+
+class AdIn(BaseModel):
+    slot: str
+    code: str
+
+def init_ads_table():
+    conn = get_conn()
+    conn.execute("""CREATE TABLE IF NOT EXISTS ads (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        slot TEXT, code TEXT, active INTEGER DEFAULT 1,
+        created_at TEXT)""")
+    conn.commit()
+    conn.close()
+
+@app.post("/ads")
+def create_ad(ad: AdIn):
+    init_ads_table()
+    conn = get_conn()
+    conn.execute("INSERT INTO ads (slot,code,active,created_at) VALUES (?,?,1,?)",
+        (ad.slot[:50], ad.code[:2000], datetime.utcnow().isoformat()))
+    conn.commit()
+    conn.close()
+    return {"message": "Ad saved."}
+
+@app.get("/ads")
+def get_ads():
+    init_ads_table()
+    conn = get_conn()
+    rows = conn.execute("SELECT * FROM ads ORDER BY id DESC").fetchall()
+    conn.close()
+    return {"ads": [dict(r) for r in rows]}
+
+@app.get("/ads/active")
+def get_active_ads():
+    init_ads_table()
+    conn = get_conn()
+    rows = conn.execute("SELECT * FROM ads WHERE active=1 ORDER BY id DESC").fetchall()
+    conn.close()
+    return {"ads": [dict(r) for r in rows]}
+
+@app.post("/ads/{ad_id}/toggle")
+def toggle_ad(ad_id: int):
+    init_ads_table()
+    conn = get_conn()
+    conn.execute("UPDATE ads SET active = CASE WHEN active=1 THEN 0 ELSE 1 END WHERE id=?", (ad_id,))
+    conn.commit()
+    conn.close()
+    return {"message": "Toggled."}
+
+@app.delete("/ads/{ad_id}")
+def delete_ad(ad_id: int):
+    init_ads_table()
+    conn = get_conn()
+    conn.execute("DELETE FROM ads WHERE id=?", (ad_id,))
+    conn.commit()
+    conn.close()
+    return {"message": "Deleted."}
+
+@app.delete("/reviews/{review_id}")
+def delete_review(review_id: int):
+    conn = get_conn()
+    conn.execute("DELETE FROM reviews WHERE id=?", (review_id,))
+    conn.commit()
+    conn.close()
+    return {"message": "Review deleted."}
