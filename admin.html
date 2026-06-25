@@ -257,7 +257,7 @@ async function loadAds() {
     }
     document.getElementById('ads-list').innerHTML = html;
   } catch(e) {
-    document.getElementById('ads-list').innerHTML = '<div class="err">Could not load ads.</div>';
+    document.getElementById('ads-list').innerHTML = '<div class="err">Could not load ads: ' + e.message + '</div>';
   }
 }
 
@@ -266,11 +266,17 @@ async function saveAd() {
   const code = document.getElementById('ad-code').value.trim();
   if (!slot || !code) { alert('Fill in both slot name and ad code.'); return; }
   try {
-    await req('/ads', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({slot,code})});
-    document.getElementById('ad-slot').value = '';
-    document.getElementById('ad-code').value = '';
-    loadAds();
-  } catch(e) { alert('Could not save ad.'); }
+    const r = await fetch(API + '/ads', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({slot,code})});
+    const d = await r.json();
+    if (r.ok) {
+      document.getElementById('ad-slot').value = '';
+      document.getElementById('ad-code').value = '';
+      document.getElementById('ads-list').insertAdjacentHTML('beforebegin','<div class="success">Ad saved successfully!</div>');
+      loadAds();
+    } else {
+      alert('Error: ' + JSON.stringify(d));
+    }
+  } catch(e) { alert('Could not save ad: ' + e.message); }
 }
 
 async function toggleAd(id, active) {
