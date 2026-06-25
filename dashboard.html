@@ -548,9 +548,9 @@ function renderLiveCard(m) {
 async function runLiveManual() {
   const home = document.getElementById('live-home').value.trim();
   const away = document.getElementById('live-away').value.trim();
-  const hs = document.getElementById('live-hscore').value || 0;
-  const as2 = document.getElementById('live-ascore').value || 0;
-  const min = document.getElementById('live-min').value || 45;
+  const hs = parseInt(document.getElementById('live-hscore').value) || 0;
+  const as2 = parseInt(document.getElementById('live-ascore').value) || 0;
+  const min = parseInt(document.getElementById('live-min').value) || 45;
   if (!home || !away) return;
   document.getElementById('live-manual-out').innerHTML = '<div class="loader"><div class="spin"></div>Calculating...</div>';
   try {
