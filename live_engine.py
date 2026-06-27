@@ -5,9 +5,11 @@ Falls back to manual input if API unavailable
 """
 import math
 import requests
-from datetime import datetime
+from datetime import datetime, date
 
-FOOTBALL_DATA_TOKEN = "0d47d333cea34defa71c3620bc79aecc"
+import os
+
+FOOTBALL_DATA_TOKEN = os.environ.get("FOOTBALL_DATA_TOKEN", "")
 LIVE_URL = "https://api.football-data.org/v4/matches"
 HEADERS = {"X-Auth-Token": FOOTBALL_DATA_TOKEN}
 
@@ -15,71 +17,95 @@ HEADERS = {"X-Auth-Token": FOOTBALL_DATA_TOKEN}
 WC_COMPETITION = "WC"
 
 
+def _extract_score(score: dict) -> tuple:
+    """
+    Shared helper — extracts current home/away score from a match score block.
+    Prefers fullTime if available, falls back to halfTime.
+    Returns (home_score, away_score) as ints.
+    """
+    full = score.get("fullTime", {})
+    half = score.get("halfTime", {})
+    current = full if full.get("home") is not None else half
+    return (current.get("home") or 0, current.get("away") or 0)
+
+
+def _extract_minute(m: dict) -> int:
+    """
+    FIX 3: football-data.org v4 stores current minute at
+    score.currentMinute, not at the top-level m['minute'].
+    Falls back to top-level just in case.
+    """
+    return m.get("score", {}).get("currentMinute") or m.get("minute") or 0
+
+
 def fetch_live_scores() -> list:
     """Fetch live WC2026 matches from football-data.org"""
+    # FIX 6: Guard against missing token — avoids silent 401s
+    if not FOOTBALL_DATA_TOKEN:
+        print("[LIVE] No API token set — skipping live fetch.")
+        return []
+
     live_matches = []
-    
+
     try:
-        # Fetch live matches
+        # Fetch LIVE matches
         r = requests.get(
             f"{LIVE_URL}?status=LIVE&competitions={WC_COMPETITION}",
             headers=HEADERS, timeout=10
         )
         if r.status_code == 200:
-            data = r.json()
-            for m in data.get("matches", []):
-                score = m.get("score", {})
-                full = score.get("fullTime", {})
-                half = score.get("halfTime", {})
-                current = full if full.get("home") is not None else half
-                
-                home_score = current.get("home") or 0
-                away_score = current.get("away") or 0
-                minute = m.get("minute", 0) or 0
-                
+            for m in r.json().get("matches", []):
+                home_score, away_score = _extract_score(m.get("score", {}))
                 live_matches.append({
                     "home": m["homeTeam"]["name"],
                     "away": m["awayTeam"]["name"],
                     "home_score": home_score,
                     "away_score": away_score,
-                    "minute": minute,
+                    "minute": _extract_minute(m),
                     "status": m.get("status", "LIVE"),
                 })
             print(f"[LIVE] Fetched {len(live_matches)} live matches from API")
+
+        # FIX 1: Only return early if we actually found matches.
+        # Previously this returned immediately even on empty list,
+        # making the IN_PLAY branch permanently dead code.
+        if live_matches:
             return live_matches
 
-        # Also try IN_PLAY status
+        # Try IN_PLAY status as fallback
         r2 = requests.get(
             f"{LIVE_URL}?status=IN_PLAY&competitions={WC_COMPETITION}",
             headers=HEADERS, timeout=10
         )
         if r2.status_code == 200:
-            data2 = r2.json()
-            for m in data2.get("matches", []):
-                score = m.get("score", {})
-                current = score.get("fullTime", {})
-                home_score = current.get("home") or 0
-                away_score = current.get("away") or 0
+            for m in r2.json().get("matches", []):
+                # FIX 2: Use shared _extract_score helper so halfTime
+                # scores are captured correctly (was only checking fullTime)
+                home_score, away_score = _extract_score(m.get("score", {}))
                 live_matches.append({
                     "home": m["homeTeam"]["name"],
                     "away": m["awayTeam"]["name"],
                     "home_score": home_score,
                     "away_score": away_score,
-                    "minute": m.get("minute", 0) or 0,
+                    "minute": _extract_minute(m),
                     "status": "LIVE",
                 })
             return live_matches
 
     except Exception as e:
         print(f"[LIVE] API fetch failed: {e}")
-    
+
     return []
 
 
 def fetch_todays_scores() -> list:
     """Fetch today's WC2026 match scores including finished ones."""
+    # FIX 6: Guard against missing token
+    if not FOOTBALL_DATA_TOKEN:
+        print("[LIVE] No API token set — skipping today's scores fetch.")
+        return []
+
     try:
-        from datetime import date
         today = str(date.today())
         r = requests.get(
             f"{LIVE_URL}?competitions={WC_COMPETITION}&dateFrom={today}&dateTo={today}",
@@ -92,7 +118,7 @@ def fetch_todays_scores() -> list:
                 ft = score.get("fullTime", {})
                 ht = score.get("halfTime", {})
                 status = m.get("status", "")
-                
+
                 matches.append({
                     "home": m["homeTeam"]["name"],
                     "away": m["awayTeam"]["name"],
@@ -100,7 +126,7 @@ def fetch_todays_scores() -> list:
                     "away_score": ft.get("away"),
                     "ht_home": ht.get("home"),
                     "ht_away": ht.get("away"),
-                    "minute": m.get("minute", 0),
+                    "minute": _extract_minute(m),
                     "status": status,
                 })
             return matches
@@ -123,17 +149,21 @@ def live_predict(home, away, home_score, away_score, minute, home_xg_pre, away_x
     time_fraction = time_remaining / total_time
 
     goal_diff = home_score - away_score
+
+    # Momentum factors:
+    # When home leads, home sits back (0.85) and away chases (1.20) — and vice versa.
+    # When level after 70 mins, both sides push (1.10).
     home_momentum = 1.0
     away_momentum = 1.0
 
     if goal_diff > 0:
-        home_momentum = 0.85
-        away_momentum = 1.20
+        home_momentum = 0.85   # home sitting back
+        away_momentum = 1.20   # away chasing
     elif goal_diff < 0:
-        home_momentum = 1.20
-        away_momentum = 0.85
+        home_momentum = 1.20   # home chasing
+        away_momentum = 0.85   # away sitting back
     elif minute > 70:
-        home_momentum = 1.10
+        home_momentum = 1.10   # level — both pushing late
         away_momentum = 1.10
 
     home_rxg = max(0.05, home_xg_pre * time_fraction * home_momentum)
@@ -147,9 +177,9 @@ def live_predict(home, away, home_score, away_score, minute, home_xg_pre, away_x
             p = poisson(home_rxg, h_add) * poisson(away_rxg, a_add)
             fh = home_score + h_add
             fa = away_score + a_add
-            if fh > fa:   hw += p
-            elif fh == fa: d  += p
-            else:          aw += p
+            if fh > fa:    hw  += p
+            elif fh == fa: d   += p
+            else:          aw  += p
             if fh + fa > 2:        o25  += p
             if fh > 0 and fa > 0:  btts += p
 
@@ -167,8 +197,15 @@ def live_predict(home, away, home_score, away_score, minute, home_xg_pre, away_x
         else:
             aw_p = 98.0; d_p = 1.5; hw_p = 0.5
 
+    # FIX 5: Handle all three cases — 3+ goals (Over certain), 2 goals
+    # (very unlikely to add one more in 5 mins), 0-1 goals (small chance)
     if minute >= 85:
-        o25_p = 100.0 if current_total > 2 else round(o25_p * 0.3, 1)
+        if current_total > 2:
+            o25_p = 100.0                        # already over 2.5
+        elif current_total == 2:
+            o25_p = round(o25_p * 0.15, 1)      # exactly 2 — one more goal very unlikely
+        else:
+            o25_p = round(o25_p * 0.3, 1)       # 0 or 1 goals — needs 3+ in last mins
 
     cands = [
         (f"{home} Win", hw_p), ("Draw", d_p), (f"{away} Win", aw_p),

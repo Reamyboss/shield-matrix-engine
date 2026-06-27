@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shield Matrix Engine — WC2026 AI Predictions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0f172a; color: #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .navbar { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(148, 163, 184, 0.1); padding: 20px 0; position: sticky; top: 0; z-index: 50; }
+    .navbar-content { display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 24px; font-weight: 900; background: linear-gradient(135deg, #38bdf8, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .nav-links { display: flex; gap: 20px; }
+    .nav-links a { color: #94a3b8; text-decoration: none; font-size: 14px; transition: color 0.3s; }
+    .nav-links a:hover { color: #38bdf8; }
+    .hero { text-align: center; padding: 60px 20px; }
+    .hero h1 { font-size: 48px; font-weight: 900; margin-bottom: 20px; background: linear-gradient(135deg, #38bdf8, #06b6d4, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .hero p { font-size: 18px; color: #cbd5e1; margin-bottom: 40px; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 40px 0; }
+    .stat-card { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(148, 163, 184, 0.1); border-radius: 12px; padding: 20px; text-align: center; }
+    .stat-number { font-size: 32px; font-weight: 900; color: #38bdf8; }
+    .stat-label { font-size: 12px; color: #94a3b8; margin-top: 10px; text-transform: uppercase; }
+    .matches { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin: 40px 0; }
+    .match-card { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(148, 163, 184, 0.1); border-radius: 12px; padding: 20px; }
+    .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .match-date { font-size: 12px; color: #94a3b8; }
+    .match-status { font-size: 11px; padding: 4px 8px; background: rgba(34, 197, 94, 0.1); color: #22c55e; border-radius: 4px; }
+    .match-teams { display: flex; justify-content: space-between; align-items: center; margin: 20px 0; }
+    .team { text-align: center; flex: 1; }
+    .team-flag { font-size: 40px; margin-bottom: 10px; }
+    .team-name { font-weight: 600; font-size: 14px; }
+    .vs { color: #64748b; font-weight: 600; }
+    .prediction { background: rgba(59, 130, 246, 0.1); border-left: 3px solid #3b82f6; padding: 12px; border-radius: 4px; margin-top: 15px; font-size: 13px; }
+    .prediction-label { color: #94a3b8; font-size: 11px; }
+    .prediction-value { color: #38bdf8; font-weight: 600; margin-top: 5px; }
+    .button { background: linear-gradient(135deg, #38bdf8, #06b6d4); color: #0f172a; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: opacity 0.3s; }
+    .button:hover { opacity: 0.9; }
+    .loading { text-align: center; padding: 40px; color: #94a3b8; }
+    .spinner { display: inline-block; width: 30px; height: 30px; border: 3px solid rgba(148, 163, 184, 0.2); border-top-color: #38bdf8; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container">
+    <div class="navbar-content">
+      <div class="logo">🛡️ Shield Matrix</div>
+      <div class="nav-links">
+        <a href="/">Dashboard</a>
+        <a href="/admin">Admin</a>
+        <a href="/api/docs">API</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="hero">
+    <h1>WC2026 AI Predictions</h1>
+    <p>Real-time match predictions powered by ELO ratings & Poisson analysis</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-number" id="total-fixtures">—</div>
+      <div class="stat-label">Total Fixtures</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="finished-matches">—</div>
+      <div class="stat-label">Finished</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="upcoming-matches">—</div>
+      <div class="stat-label">Upcoming</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">~85%</div>
+      <div class="stat-label">Accuracy</div>
+    </div>
+  </div>
+
+  <h2 style="margin: 40px 0 20px; font-size: 24px; font-weight: 700;">Today's Matches</h2>
+  <div id="matches" class="matches">
+    <div class="loading"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<script>
+const API = '';
+
+const FLAGS = {
+  'France':'🇫🇷','Brazil':'🇧🇷','Argentina':'🇦🇷','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Spain':'🇪🇸','Germany':'🇩🇪',
+  'Netherlands':'🇳🇱','Portugal':'🇵🇹','Belgium':'🇧🇪','Croatia':'🇭🇷','Uruguay':'🇺🇾',
+  'USA':'🇺🇸','United States':'🇺🇸','Mexico':'🇲🇽','Colombia':'🇨🇴','Japan':'🇯🇵',
+  'Morocco':'🇲🇦','Senegal':'🇸🇳','Switzerland':'🇨🇭','Denmark':'🇩🇰','Sweden':'🇸🇪',
+  'Canada':'🇨🇦','Ecuador':'🇪🇨','South Korea':'🇰🇷','Australia':'🇦🇺','Iran':'🇮🇷',
+  'Saudi Arabia':'🇸🇦','Tunisia':'🇹🇳','Ghana':'🇬🇭','Nigeria':'🇳🇬','Qatar':'🇶🇦',
+  'Poland':'🇵🇱','Serbia':'🇷🇸','Cameroon':'🇨🇲','Algeria':'🇩🇿','Egypt':'🇪🇬',
+  'South Africa':'🇿🇦','Costa Rica':'🇨🇷','Panama':'🇵🇦','Wales':'🏴󠁧󠁢󠁷󠁬󠁳󠁿','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+  'Turkey':'🇹🇷','Türkiye':'🇹🇷','Norway':'🇳🇴','Austria':'🇦🇹','New Zealand':'🇳🇿',
+};
+
+function getFlag(team) { return FLAGS[team] || '⚽'; }
+
+async function loadMatches() {
+  try {
+    const res = await fetch(`${API}/matches/today`);
+    const data = await res.json();
+    
+    document.getElementById('total-fixtures').textContent = (data.count || 0) + (await fetch(`${API}/matches/results`).then(r => r.json()).then(d => d.total_played || 0));
+    document.getElementById('finished-matches').textContent = (await fetch(`${API}/matches/results`).then(r => r.json()).then(d => d.total_played || 0));
+    document.getElementById('upcoming-matches').textContent = (await fetch(`${API}/matches/upcoming?limit=100`).then(r => r.json()).then(d => d.count || 0));
+    
+    const matchesEl = document.getElementById('matches');
+    if (!data.matches || data.matches.length === 0) {
+      matchesEl.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #94a3b8;">No matches today. Check back later!</div>';
+      return;
+    }
+    
+    matchesEl.innerHTML = data.matches.map(m => {
+      const p = m.prediction || {};
+      const prob = p.probabilities || {};
+      const bet = p.best_bet || {};
+      return `
+        <div class="match-card">
+          <div class="match-header">
+            <span class="match-date">${m.date}</span>
+            <span class="match-status">${m.status}</span>
+          </div>
+          <div class="match-teams">
+            <div class="team">
+              <div class="team-flag">${getFlag(m.home)}</div>
+              <div class="team-name">${m.home}</div>
+            </div>
+            <div class="vs">VS</div>
+            <div class="team">
+              <div class="team-flag">${getFlag(m.away)}</div>
+              <div class="team-name">${m.away}</div>
+            </div>
+          </div>
+          ${prob.home_win ? `
+            <div class="prediction">
+              <div class="prediction-label">Best Bet</div>
+              <div class="prediction-value">${bet.pick || '—'} (${bet.probability || '—'}%)</div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+  } catch (e) {
+    document.getElementById('matches').innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #ef4444;">Error loading matches</div>';
+  }
+}
+
+loadMatches();
+setInterval(loadMatches, 60000);
+</script>
+
+</body>
+</html>

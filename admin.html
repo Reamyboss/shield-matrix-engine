@@ -1,329 +1,281 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Shield Matrix — Admin</title>
-<style>
-:root {
-  --bg:#080d18;--surface:#0f1624;--card:#161f30;--border:#1e2d45;
-  --accent:#3b82f6;--green:#10b981;--amber:#f59e0b;--red:#ef4444;
-  --text:#f1f5f9;--muted:#64748b;--sub:#94a3b8;--radius:12px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;min-height:100vh;padding-bottom:40px}
-.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.logo{font-size:17px;font-weight:800}.logo span{color:var(--red)}
-.logout{background:var(--card);border:1px solid var(--border);color:var(--sub);border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer}
-.main{padding:14px;max-width:600px;margin:0 auto}
-.section{display:none}.section.active{display:block}
-.tab-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-.tab-btn{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted)}
-.tab-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px}
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
-.stat-l{font-size:11px;color:var(--muted);margin-bottom:4px}
-.stat-v{font-size:26px;font-weight:800}
-.sec-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:16px 0 8px}
-.inp{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;width:100%;outline:none;margin-bottom:8px}
-.inp:focus{border-color:var(--accent)}
-.btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:11px 16px;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-bottom:8px}
-.btn:active{opacity:.8}
-.btn-red{background:var(--red)}
-.btn-green{background:var(--green)}
-.btn-amber{background:var(--amber);color:#000}
-.btn-sm{padding:6px 12px;font-size:12px;width:auto;margin:0}
-.review-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:8px}
-.review-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.ad-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:8px}
-.ad-label{font-size:11px;color:var(--accent);font-weight:700;text-transform:uppercase;margin-bottom:6px}
-.badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
-.b-active{background:#1a3320;color:var(--green)}
-.b-off{background:#3a1515;color:var(--red)}
-.login-box{max-width:320px;margin:80px auto;padding:24px}
-.loader{text-align:center;padding:40px;color:var(--muted)}
-.spin{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 10px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.err{background:#3a1515;border:1px solid #7f2020;border-radius:8px;padding:10px;color:var(--red);font-size:13px;margin-bottom:10px}
-.success{background:#1a3320;border:1px solid #2d6a3f;border-radius:8px;padding:10px;color:var(--green);font-size:13px;margin-bottom:10px}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shield Matrix — Admin Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { background: #020817; font-family: 'Inter', sans-serif; }
+    .glass { background: rgba(255,255,255,0.04); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); }
+    .gradient-text { background: linear-gradient(135deg,#38bdf8,#00f5d4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  </style>
 </head>
-<body>
+<body class="text-white min-h-screen">
 
 <!-- LOGIN SCREEN -->
-<div id="login-screen">
-  <div class="login-box">
-    <div style="text-align:center;margin-bottom:24px">
-      <div style="font-size:24px;font-weight:800">Shield Matrix</div>
-      <div style="font-size:13px;color:var(--muted);margin-top:4px">Admin Panel</div>
+<div id="login-screen" class="min-h-screen flex items-center justify-center">
+  <div class="glass rounded-2xl p-8 w-full max-w-sm">
+    <div class="text-center mb-6">
+      <div class="text-4xl mb-2">🛡️</div>
+      <h1 class="text-xl font-black gradient-text">Shield Matrix Admin</h1>
+      <p class="text-slate-500 text-sm mt-1">Enter your admin password</p>
     </div>
-    <div id="login-err"></div>
-    <input class="inp" id="pwd-inp" type="password" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="btn" onclick="doLogin()">Login</button>
+    <input id="pwd-input" type="password" placeholder="Admin password"
+      class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white mb-4 focus:outline-none focus:border-sky-500" />
+    <button onclick="doLogin()" class="w-full py-3 rounded-xl font-bold bg-gradient-to-r from-sky-500 to-cyan-400 text-slate-900">Login</button>
+    <p id="login-err" class="text-red-400 text-xs text-center mt-3 hidden">Wrong password</p>
   </div>
 </div>
 
 <!-- ADMIN PANEL -->
-<div id="admin-panel" style="display:none">
+<div id="admin-panel" class="hidden">
+  <nav class="glass border-b border-white/5 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <span class="text-2xl">🛡️</span>
+      <span class="font-black gradient-text">Shield Matrix Admin</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/dashboard" class="text-sm text-sky-400 hover:text-sky-300">← Dashboard</a>
+      <button onclick="doLogout()" class="text-sm text-slate-500 hover:text-white">Logout</button>
+    </div>
+  </nav>
 
-<div class="hdr">
-  <div class="logo">Shield <span>Admin</span></div>
-  <button class="logout" onclick="doLogout()">Logout</button>
-</div>
+  <main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
 
-<div class="main">
-  <div class="tab-row">
-    <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
-    <button class="tab-btn" onclick="switchTab('reviews')">Reviews</button>
-    <button class="tab-btn" onclick="switchTab('ads')">Ad Banners</button>
-    <button class="tab-btn" onclick="switchTab('sync')">Data Sync</button>
-  </div>
+    <!-- STATS CARDS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="glass rounded-2xl p-4 text-center"><div class="text-2xl font-black text-sky-400" id="s-fixtures">—</div><div class="text-xs text-slate-500 mt-1">Total Fixtures</div></div>
+      <div class="glass rounded-2xl p-4 text-center"><div class="text-2xl font-black text-emerald-400" id="s-finished">—</div><div class="text-xs text-slate-500 mt-1">Finished</div></div>
+      <div class="glass rounded-2xl p-4 text-center"><div class="text-2xl font-black text-yellow-400" id="s-reviews">—</div><div class="text-xs text-slate-500 mt-1">Reviews</div></div>
+      <div class="glass rounded-2xl p-4 text-center"><div class="text-2xl font-black text-violet-400" id="s-ads">—</div><div class="text-xs text-slate-500 mt-1">Active Ads</div></div>
+    </div>
 
-  <!-- OVERVIEW -->
-  <div class="section active" id="t-overview">
-    <div id="overview-out"><div class="loader"><div class="spin"></div>Loading...</div></div>
-  </div>
-
-  <!-- REVIEWS -->
-  <div class="section" id="t-reviews">
-    <div class="sec-label">All Reviews</div>
-    <div id="admin-reviews-out"><div class="loader"><div class="spin"></div>Loading...</div></div>
-  </div>
-
-  <!-- ADS -->
-  <div class="section" id="t-ads">
-    <div class="sec-label">Ad Banner Manager</div>
-    <div class="card" style="margin-bottom:12px">
-      <div style="font-size:13px;color:var(--sub);margin-bottom:12px;line-height:1.6">
-        Paste your affiliate ad code below. Supports Google AdSense, 1xBet, Betway, Amazon, or any HTML banner code.
+    <!-- SYNC -->
+    <div class="glass rounded-2xl p-6">
+      <h2 class="font-bold text-lg mb-4">⚡ Data Sync</h2>
+      <div class="flex items-center gap-4">
+        <button onclick="triggerSync()" class="px-6 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 font-bold text-sm transition-colors">Sync Now</button>
+        <span id="sync-msg" class="text-sm text-slate-400"></span>
       </div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:8px">
-        Available slots: 
-        <span onclick="document.getElementById('ad-slot').value='top-banner'" style="color:var(--accent);cursor:pointer;margin-right:8px">top-banner</span>
-        <span onclick="document.getElementById('ad-slot').value='mid-banner'" style="color:var(--accent);cursor:pointer;margin-right:8px">mid-banner</span>
-        <span onclick="document.getElementById('ad-slot').value='bottom-banner'" style="color:var(--accent);cursor:pointer;margin-right:8px">bottom-banner</span>
-        <span onclick="document.getElementById('ad-slot').value='predict-banner'" style="color:var(--accent);cursor:pointer">predict-banner</span>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="glass rounded-2xl p-6">
+      <h2 class="font-bold text-lg mb-4">⭐ Reviews</h2>
+      <div id="reviews-list" class="space-y-3"></div>
+    </div>
+
+    <!-- ADS -->
+    <div class="glass rounded-2xl p-6">
+      <h2 class="font-bold text-lg mb-4">📢 Ad Slots</h2>
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div>
+          <label class="text-xs text-slate-400 mb-1 block">Slot Name</label>
+          <input id="ad-slot" placeholder="e.g. banner-top"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 mb-1 block">Ad Code (HTML)</label>
+          <input id="ad-code" placeholder="<script>...</script>"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500" />
+        </div>
       </div>
-      <input class="inp" id="ad-slot" placeholder="Click a slot name above or type custom" style="margin-bottom:8px">
-      <textarea class="inp" id="ad-code" placeholder="Paste ad HTML code here..." style="min-height:100px;resize:none"></textarea>
-      <button class="btn btn-green" onclick="saveAd()">Save Ad Banner</button>
+      <button onclick="createAd()" class="px-5 py-2 rounded-xl bg-violet-500 hover:bg-violet-400 font-bold text-sm mb-4">Add Ad</button>
+      <div id="ads-list" class="space-y-3"></div>
     </div>
-    <div id="ads-list"><div class="loader"><div class="spin"></div>Loading ads...</div></div>
-  </div>
 
-  <!-- SYNC -->
-  <div class="section" id="t-sync">
-    <div class="sec-label">Data Pipeline</div>
-    <div class="card">
-      <div style="font-size:13px;color:var(--sub);margin-bottom:12px">Force a fresh sync of all WC2026 match data from the live source.</div>
-      <button class="btn btn-amber" onclick="forceSync()">Force Data Sync Now</button>
-      <div id="sync-result"></div>
-    </div>
-    <div class="card" style="margin-top:10px">
-      <div class="sec-label" style="margin-top:0">Database Status</div>
-      <div id="db-status"><div class="loader"><div class="spin"></div></div></div>
-    </div>
-  </div>
-
-</div>
+  </main>
 </div>
 
 <script>
-const API = window.location.origin.includes('localhost') ? 'http://localhost:8001' : window.location.origin;
-const ADMIN_PASSWORD = 'Vreev@80653';
-let isLoggedIn = false;
+let ADMIN_KEY = '';
+
+// FIX 2 & 3: Escape user-supplied content before injecting into innerHTML
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 function doLogin() {
-  const pwd = document.getElementById('pwd-inp').value;
-  if (pwd === ADMIN_PASSWORD) {
-    isLoggedIn = true;
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('admin-panel').style.display = 'block';
-    loadOverview();
-    loadAdminReviews();
-    loadAds();
-    loadDbStatus();
-  } else {
-    document.getElementById('login-err').innerHTML = '<div class="err">Wrong password. Try again.</div>';
-  }
+  // FIX 6: Hide error at the start of every login attempt
+  document.getElementById('login-err').classList.add('hidden');
+  ADMIN_KEY = document.getElementById('pwd-input').value;
+  // FIX 5: Error handling on fetch
+  fetch('/admin/stats', { headers: { 'x-admin-key': ADMIN_KEY } })
+    .then(r => {
+      if (r.ok) {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('admin-panel').classList.remove('hidden');
+        loadAll();
+      } else {
+        document.getElementById('login-err').classList.remove('hidden');
+      }
+    })
+    .catch(() => {
+      document.getElementById('login-err').textContent = 'Connection error. Try again.';
+      document.getElementById('login-err').classList.remove('hidden');
+    });
 }
 
 function doLogout() {
-  isLoggedIn = false;
-  document.getElementById('login-screen').style.display = 'block';
-  document.getElementById('admin-panel').style.display = 'none';
-  document.getElementById('pwd-inp').value = '';
+  ADMIN_KEY = '';
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('admin-panel').classList.add('hidden');
 }
 
-async function req(path, opts={}) {
-  const r = await fetch(API + path, opts);
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return r.json();
-}
+document.getElementById('pwd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
 
-// OVERVIEW
-async function loadOverview() {
+function loadAll() { loadStats(); loadReviews(); loadAds(); }
+
+async function loadStats() {
+  // FIX 5: Error handling on fetch
   try {
-    const [results, upcoming, reviews, health] = await Promise.all([
-      req('/matches/results'),
-      req('/matches/upcoming'),
-      req('/reviews'),
-      req('/health'),
-    ]);
-    document.getElementById('overview-out').innerHTML = `
-      <div class="stat-grid">
-        <div class="stat"><div class="stat-l">Matches in DB</div><div class="stat-v">${results.total_played + upcoming.count}</div></div>
-        <div class="stat"><div class="stat-l">Results tracked</div><div class="stat-v" style="color:var(--green)">${results.total_played}</div></div>
-        <div class="stat"><div class="stat-l">Upcoming fixtures</div><div class="stat-v" style="color:var(--accent)">${upcoming.count}</div></div>
-        <div class="stat"><div class="stat-l">Total reviews</div><div class="stat-v" style="color:var(--amber)">${reviews.total}</div></div>
-      </div>
-      <div class="card">
-        <div class="sec-label" style="margin-top:0">Server Status</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="width:10px;height:10px;border-radius:50%;background:var(--green)"></div>
-          <span style="color:var(--green);font-weight:600">Online</span>
-          <span style="color:var(--muted);font-size:12px;margin-left:8px">${health.time}</span>
-        </div>
-      </div>
-      <div class="card">
-        <div class="sec-label" style="margin-top:0">Quick Actions</div>
-        <button class="btn btn-amber" style="margin-bottom:8px" onclick="forceSync()">Sync Data Now</button>
-        <a href="${API}/dashboard" target="_blank"><button class="btn" style="background:var(--surface);border:1px solid var(--border);color:var(--text)">View Live Dashboard ↗</button></a>
-      </div>`;
-  } catch(e) {
-    document.getElementById('overview-out').innerHTML = '<div class="err">Could not load overview.</div>';
+    const r = await fetch('/admin/stats', { headers: { 'x-admin-key': ADMIN_KEY } });
+    const d = await r.json();
+    document.getElementById('s-fixtures').textContent = d.fixtures?.total ?? '—';
+    document.getElementById('s-finished').textContent = d.fixtures?.finished ?? '—';
+    document.getElementById('s-reviews').textContent = `${d.reviews?.total ?? '—'} (⭐${d.reviews?.avg_rating ?? '—'})`;
+    document.getElementById('s-ads').textContent = `${d.ads?.active ?? '—'}/${d.ads?.total ?? '—'}`;
+  } catch (e) {
+    console.error('[loadStats] failed:', e);
   }
 }
 
-// REVIEWS
-async function loadAdminReviews() {
+async function triggerSync() {
+  const msg = document.getElementById('sync-msg');
+  msg.textContent = 'Syncing...';
+  // FIX 4: Send admin key header on sync — consistent auth across all calls
+  // FIX 5: Error handling on fetch
   try {
-    const d = await req('/reviews');
-    if (!d.reviews.length) {
-      document.getElementById('admin-reviews-out').innerHTML = '<div class="card" style="color:var(--muted);text-align:center;padding:24px">No reviews yet.</div>';
+    await fetch('/sync', { headers: { 'x-admin-key': ADMIN_KEY } });
+    msg.textContent = '✅ Sync triggered!';
+    setTimeout(() => { msg.textContent = ''; loadStats(); }, 3000);
+  } catch (e) {
+    msg.textContent = '❌ Sync failed. Check connection.';
+  }
+}
+
+async function loadReviews() {
+  // FIX 5: Error handling on fetch
+  try {
+    const r = await fetch('/reviews');
+    const d = await r.json();
+    const el = document.getElementById('reviews-list');
+    if (!d.reviews?.length) {
+      el.innerHTML = '<p class="text-slate-500 text-sm">No reviews yet.</p>';
       return;
     }
-    let html = '';
-    for (const r of d.reviews) {
-      const stars = '★'.repeat(r.rating)+'☆'.repeat(5-r.rating);
-      html += `<div class="review-card">
-        <div class="review-top">
-          <span style="font-weight:600">${r.name}</span>
-          <div style="display:flex;gap:8px;align-items:center">
-            <span style="color:#f59e0b">${stars}</span>
-            <button class="btn btn-red btn-sm" onclick="deleteReview('${r.id}')">Delete</button>
+    // FIX 2: Escape rv.name and rv.text before injecting into innerHTML
+    el.innerHTML = d.reviews.map(rv => `
+      <div class="glass rounded-xl p-4 flex items-start justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-bold text-sm">${escHtml(rv.name)}</span>
+            <span class="text-yellow-400 text-xs">${'⭐'.repeat(Math.min(rv.rating, 5))}</span>
+            <span class="text-slate-600 text-xs">${escHtml(rv.date)}</span>
           </div>
+          <p class="text-slate-300 text-sm">${escHtml(rv.text)}</p>
         </div>
-        <div style="font-size:13px;color:var(--sub)">${r.text}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:6px">${r.date}</div>
-      </div>`;
-    }
-    document.getElementById('admin-reviews-out').innerHTML = html;
-  } catch(e) {
-    document.getElementById('admin-reviews-out').innerHTML = '<div class="err">Could not load reviews.</div>';
+        <button onclick="deleteReview(${rv.id})" class="text-red-400 hover:text-red-300 text-xs whitespace-nowrap">Delete</button>
+      </div>`).join('');
+  } catch (e) {
+    console.error('[loadReviews] failed:', e);
+    document.getElementById('reviews-list').innerHTML = '<p class="text-red-400 text-sm">Failed to load reviews.</p>';
   }
 }
 
 async function deleteReview(id) {
+  // FIX 5: Error handling on fetch
   try {
-    await req('/reviews/' + id, {method:'DELETE'});
-    loadAdminReviews();
-  } catch(e) { alert('Could not delete.'); }
-}
-
-// ADS
-async function loadAds() {
-  try {
-    const d = await req('/ads');
-    const ads = d.ads || [];
-    if (!ads.length) {
-      document.getElementById('ads-list').innerHTML = '<div class="card" style="color:var(--muted);text-align:center;padding:20px">No ad banners yet. Add your first one above.</div>';
-      return;
-    }
-    let html = '';
-    for (const a of ads) {
-      html += `<div class="ad-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <div class="ad-label">${a.slot}</div>
-          <div style="display:flex;gap:6px">
-            <button class="btn btn-sm" style="background:${a.active?'var(--red)':'var(--green)'};color:#fff" onclick="toggleAd(${a.id},${a.active})">${a.active?'Disable':'Enable'}</button>
-            <button class="btn btn-red btn-sm" onclick="deleteAd(${a.id})">Delete</button>
-          </div>
-        </div>
-        <div style="font-size:12px;color:var(--muted);word-break:break-all">${a.code.substring(0,80)}...</div>
-        <div style="margin-top:6px"><span class="badge ${a.active?'b-active':'b-off'}">${a.active?'Active':'Disabled'}</span></div>
-      </div>`;
-    }
-    document.getElementById('ads-list').innerHTML = html;
-  } catch(e) {
-    document.getElementById('ads-list').innerHTML = '<div class="err">Could not load ads: ' + e.message + '</div>';
+    await fetch(`/reviews/${id}`, { method: 'DELETE', headers: { 'x-admin-key': ADMIN_KEY } });
+    loadReviews();
+    loadStats();
+  } catch (e) {
+    console.error('[deleteReview] failed:', e);
   }
 }
 
-async function saveAd() {
-  const slot = document.getElementById('ad-slot').value.trim();
-  const code = document.getElementById('ad-code').value.trim();
-  if (!slot || !code) { alert('Fill in both slot name and ad code.'); return; }
+async function loadAds() {
+  // FIX 5: Error handling on fetch
   try {
-    const r = await fetch(API + '/ads', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({slot,code})});
+    const r = await fetch('/ads', { headers: { 'x-admin-key': ADMIN_KEY } });
     const d = await r.json();
-    if (r.ok) {
-      document.getElementById('ad-slot').value = '';
-      document.getElementById('ad-code').value = '';
-      document.getElementById('ads-list').insertAdjacentHTML('beforebegin','<div class="success">Ad saved successfully!</div>');
-      loadAds();
-    } else {
-      alert('Error: ' + JSON.stringify(d));
+    const el = document.getElementById('ads-list');
+    if (!d.ads?.length) {
+      el.innerHTML = '<p class="text-slate-500 text-sm">No ads yet.</p>';
+      return;
     }
-  } catch(e) { alert('Could not save ad: ' + e.message); }
+    // FIX 3: Escape ad.code and ad.slot for display — raw HTML should not execute in the preview
+    el.innerHTML = d.ads.map(ad => `
+      <div class="glass rounded-xl p-4 flex items-center justify-between gap-4">
+        <div>
+          <span class="font-bold text-sm text-sky-400">${escHtml(ad.slot)}</span>
+          <span class="ml-3 text-xs px-2 py-0.5 rounded-full ${ad.active ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}">
+            ${ad.active ? 'Active' : 'Paused'}
+          </span>
+          <p class="text-slate-500 text-xs mt-1 truncate max-w-xs">${escHtml(ad.code)}</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="toggleAd(${ad.id})" class="text-xs px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10">
+            ${ad.active ? 'Pause' : 'Activate'}
+          </button>
+          <button onclick="deleteAd(${ad.id})" class="text-xs px-3 py-1 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20">Delete</button>
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    console.error('[loadAds] failed:', e);
+    document.getElementById('ads-list').innerHTML = '<p class="text-red-400 text-sm">Failed to load ads.</p>';
+  }
 }
 
-async function toggleAd(id, active) {
+async function createAd() {
+  const slot = document.getElementById('ad-slot').value.trim();
+  const code = document.getElementById('ad-code').value.trim();
+  if (!slot || !code) return;
+  // FIX 5: Error handling on fetch
   try {
-    await req('/ads/' + id + '/toggle', {method:'POST'});
+    await fetch('/ads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_KEY },
+      body: JSON.stringify({ slot, code }),
+    });
+    document.getElementById('ad-slot').value = '';
+    document.getElementById('ad-code').value = '';
     loadAds();
-  } catch(e) { alert('Could not toggle ad.'); }
+    loadStats();
+  } catch (e) {
+    console.error('[createAd] failed:', e);
+  }
+}
+
+async function toggleAd(id) {
+  // FIX 5: Error handling on fetch
+  try {
+    await fetch(`/ads/${id}/toggle`, { method: 'POST', headers: { 'x-admin-key': ADMIN_KEY } });
+    loadAds();
+    loadStats();
+  } catch (e) {
+    console.error('[toggleAd] failed:', e);
+  }
 }
 
 async function deleteAd(id) {
+  // FIX 5: Error handling on fetch
   try {
-    await req('/ads/' + id, {method:'DELETE'});
+    await fetch(`/ads/${id}`, { method: 'DELETE', headers: { 'x-admin-key': ADMIN_KEY } });
     loadAds();
-  } catch(e) { alert('Could not delete ad.'); }
-}
-
-// SYNC
-async function forceSync() {
-  document.getElementById('sync-result').innerHTML = '<div style="color:var(--amber);margin-top:10px">Syncing...</div>';
-  try {
-    await req('/sync');
-    document.getElementById('sync-result').innerHTML = '<div class="success" style="margin-top:10px">Sync triggered successfully.</div>';
-    setTimeout(loadOverview, 3000);
-  } catch(e) {
-    document.getElementById('sync-result').innerHTML = '<div class="err" style="margin-top:10px">Sync failed.</div>';
+    loadStats();
+  } catch (e) {
+    console.error('[deleteAd] failed:', e);
   }
-}
-
-async function loadDbStatus() {
-  try {
-    const [results, upcoming] = await Promise.all([req('/matches/results'), req('/matches/upcoming')]);
-    document.getElementById('db-status').innerHTML = `
-      <div style="font-size:13px;line-height:2">
-        <div>Results in DB: <strong style="color:var(--green)">${results.total_played}</strong></div>
-        <div>Upcoming fixtures: <strong style="color:var(--accent)">${upcoming.count}</strong></div>
-        <div>Data source: <strong>WC2010–2026 (306 matches)</strong></div>
-      </div>`;
-  } catch(e) {
-    document.getElementById('db-status').innerHTML = '<div class="err">Could not load DB status.</div>';
-  }
-}
-
-function switchTab(name) {
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('t-'+name).classList.add('active');
-  event.target.classList.add('active');
 }
 </script>
 </body>

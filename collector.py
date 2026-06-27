@@ -33,10 +33,13 @@ def fetch_raw() -> dict:
 
 
 def make_match_id(match: dict) -> str:
-    """Stable unique ID for each fixture."""
+    """Stable unique ID for each fixture.
+    FIX: Removed [:6] slice — full team names prevent ID collisions
+    e.g. 'Costa Rica' vs 'Colombia' on the same date no longer risk clashing.
+    """
     d = match["date"].replace("-", "")
-    h = match["team1"].replace(" ", "").replace("&", "")[:6].upper()
-    a = match["team2"].replace(" ", "").replace("&", "")[:6].upper()
+    h = match["team1"].replace(" ", "").replace("&", "").upper()
+    a = match["team2"].replace(" ", "").replace("&", "").upper()
     return f"{d}-{h}-{a}"
 
 
@@ -51,14 +54,18 @@ def parse_and_store(raw: dict) -> dict:
     upcoming = 0
 
     for m in matches:
-        has_result = "score" in m and m["score"].get("ft") is not None
+        # FIX 1: Safely extract ft score — guard against empty list, nulls, or missing key
+        ft = m.get("score", {}).get("ft")
+        has_result = isinstance(ft, list) and len(ft) == 2 and all(v is not None for v in ft)
 
         if has_result:
             status = "FINISHED"
-            home_score = m["score"]["ft"][0]
-            away_score = m["score"]["ft"][1]
-            ht_home = m["score"].get("ht", [None, None])[0]
-            ht_away = m["score"].get("ht", [None, None])[1]
+            home_score = ft[0]
+            away_score = ft[1]
+            # FIX 2: Guard against ht being present but empty or malformed
+            ht = m.get("score", {}).get("ht") or [None, None]
+            ht_home = ht[0] if len(ht) > 0 else None
+            ht_away = ht[1] if len(ht) > 1 else None
             goals_json = json.dumps({
                 "home": m.get("goals1", []),
                 "away": m.get("goals2", []),
@@ -108,17 +115,24 @@ def parse_and_store(raw: dict) -> dict:
 
 
 def run_sync() -> dict:
-    """Full sync: fetch → parse → store → rebuild stats."""
+    """Full sync: fetch → parse → store → rebuild stats.
+    FIX: Wrapped in try/except so a network failure logs cleanly instead of crashing.
+    """
     print(f"[COLLECTOR] Starting sync at {datetime.utcnow().isoformat()}")
-    raw = fetch_raw()
-    return parse_and_store(raw)
+    try:
+        raw = fetch_raw()
+        return parse_and_store(raw)
+    except RuntimeError as e:
+        print(f"[COLLECTOR] Sync failed — {e}")
+        return {"error": str(e)}
 
 
 def get_live_team_stats() -> dict:
-    """Return all team stats as a dict keyed by team name (for engine blending)."""
-    conn = get_conn()
-    rows = conn.execute("SELECT * FROM team_stats").fetchall()
-    conn.close()
+    """Return all team stats as a dict keyed by team name (for engine blending).
+    FIX: Use context manager so connection is always closed, even if query throws.
+    """
+    with get_conn() as conn:
+        rows = conn.execute("SELECT * FROM team_stats").fetchall()
     return {r["team_name"]: dict(r) for r in rows}
 
 
