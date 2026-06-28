@@ -34,14 +34,10 @@ async def lifespan(app: FastAPI):
         print("[STARTUP] All tables ready.")
     except Exception as e:
         print(f"[STARTUP] Table error: {e}")
-    try:
-        run_sync()
-        print("[STARTUP] Sync complete.")
-    except Exception as e:
-        print(f"[STARTUP] Sync failed: {e}")
+        
+        # Run initial sync in background so it never blocks startup
+    scheduler.add_job(run_sync, "date")  # runs once immediately in background
     scheduler.add_job(run_sync, "interval", hours=3)
-    scheduler.start()
-    print("[STARTUP] Scheduler started — syncing every 3 hours.")
 
     yield  # app is running
 
